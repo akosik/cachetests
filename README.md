@@ -10,3 +10,22 @@ run a test for `akosik`, for example, enter
 ```
 make test_akosik
 ```
+
+To build all tests for all caches, enter
+
+```
+make build_all
+```
+
+Similarly, to test all caches, enter
+
+```
+make test_all
+```
+
+And finally, to delete all test executables, enter
+
+```
+make clean_all
+```
+
