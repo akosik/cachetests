@@ -23,7 +23,7 @@ void test_get_entry()
     uint8_t value[6] = {10,11,12,13,14,15};
     uint32_t val_size = 0;
     
-    cache_t cache = create_cache(100 * sizeof(value), &our_modified_jenkins);
+    cache_t cache = create_cache(100 * sizeof(value), &our_modified_jenkins, NULL, NULL);
     cache_set(cache, key, value, sizeof(value));
     uint8_t *result = cache_get(cache, key, &val_size);
     test(result[0] == 10, "Can retrieve first entry.");
