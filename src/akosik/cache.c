@@ -126,7 +126,6 @@ void cache_set(cache_t cache, key_t key, val_t val, uint32_t val_size)
       cache->memsize -= current->size;
       --cache->length;
     }
-
   // hash the key and perform linear probing until an open spot is found.
   // Since the cache resizes, the cache should never be full.
   uint64_t hashval = cache->hash(key) % cache->capacity;
