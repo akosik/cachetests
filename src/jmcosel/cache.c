@@ -53,7 +53,7 @@ uint64_t get_current_storage_used(cache_t cache) {
 	return cache->current_storage_used;
 }
 
-cache_t create_cache(uint64_t maxmem, hash_func hash) {
+cache_t create_cache(uint64_t maxmem, hash_func hash, uint8_t* add, uint8_t* remove) {
 
 	if (maxmem < SIZE_STANDARD) {
 		printf("The given maxmem (%lu) is too small; set to 64 bytes.\n",maxmem);

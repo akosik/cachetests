@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "cache.h"
 
-
 // Default hash known as djb2
 uint64_t defaultHash(key_t str)
 {

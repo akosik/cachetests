@@ -99,7 +99,7 @@ static void cache_dynamic_resize(cache_t cache)
     }
 }
 
-cache_t create_cache(uint64_t maxmem, hash_func hash)
+cache_t create_cache(uint64_t maxmem, hash_func hash, uint8_t* add, uint8_t* remove)
 {
     cache_t c = calloc(1, sizeof(struct cache_obj));
 
