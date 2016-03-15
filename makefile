@@ -28,7 +28,7 @@ clean_alasd:
 build_aled:
 	gcc src/test.c src/testing.c src/aled1027/cache.c src/aled1027/evict.c src/aled1027/node.c src/aled1027/dbLL.c $(CFLAGS) -o build/cache_aled
 
-test_aled:
+test_aled: build_aled
 	./build/cache_aled
 
 clean_aled:
