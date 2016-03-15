@@ -62,7 +62,7 @@ clean_ben:
 	rm build/cache_ben
 
 build_zeplar:
-	gcc src/test.c src/zeplar/hash_cache.c src/zeplar/slab.c src/zeplar/list.c $(CFLAGS) -o build/cache_zeplar
+	gcc src/test.c src/zeplar/cache.c src/zeplar/slabs.c src/zeplar/list.c src/zeplar/tools.c $(CFLAGS) -o build/cache_zeplar
 
 test_zeplar:
 	./build/cache_zeplar
