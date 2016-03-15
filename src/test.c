@@ -70,10 +70,57 @@ void test_get_entry()
     uint8_t *result = cache_get(cache, key, &val_size);
     test(result[0] == 10, "Can retrieve first entry.");
     test(val_size != 0, "cache_get sets val_size pointer");
+
+    destroy_cache(cache);
 }
+
+void test_empty_size()
+{
+    cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
+    uint64_t space = cache_space_used(cache);
+    test(space == 0, "Empty cache uses zero space");
+
+    destroy_cache(cache);
+}
+
+void test_size()
+{
+    cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
+    uint8_t key[2] = {'a', '\0'};
+    uint8_t value[6] = {10,11,12,13,14,15};
+    uint32_t val_size = 0;
+    cache_set(cache, key, value, sizeof(value));
+    
+    uint64_t space = cache_space_used(cache);
+    test(space == sizeof(value), "Cache computes first value size correctly");
+
+    destroy_cache(cache);
+}
+
+
+void test_size_after_delete()
+{
+    cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
+    uint8_t key[2] = {'a', '\0'};
+    uint8_t value[6] = {10,11,12,13,14,15};
+    uint32_t val_size = 0;
+    cache_set(cache, key, value, sizeof(value));
+
+    cache_delete(cache, key);
+    
+    uint64_t space = cache_space_used(cache);
+    test(space == 0, "Cache size is zero after deleting all entries");
+
+    destroy_cache(cache);
+}
+
 
 int main(int argc, char *argv[])
 {
     test_get_entry();
+    test_empty_size();
+    test_size();
+    test_size_after_delete();
+    test_overflow();
     printf("Testing...\n");
 }
