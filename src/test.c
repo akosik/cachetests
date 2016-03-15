@@ -10,8 +10,9 @@ cache_t checkInit()
   return cache;
 }
 
-int checkSet(cache_t cache)
+void checkSet()
 {
+  cache_t cache = checkInit();
   const uint8_t
     *key0 = "hello",
     *key1 = "thenumber3",
@@ -37,7 +38,8 @@ int checkSet(cache_t cache)
   uint64_t val4 = *(uint64_t*)cache_get(cache,key3,&val_size);
 
   test(val1 == 1 && val2 == 3 && val3 == 304 && val4 == 123123124, "cache_set stores values that are accessible");
-  return 1;
+
+  destroy_cache(cache);
 }
 
 // Hash function borrowed from Alex Ledger's implementation
@@ -58,18 +60,64 @@ void test_get_entry()
     uint8_t key[2] = {'a', '\0'};
     uint8_t value[6] = {10,11,12,13,14,15};
     uint32_t val_size = 0;
-
     cache_t cache = create_cache(100 * sizeof(value), &our_modified_jenkins, NULL, NULL);
+
     cache_set(cache, key, value, sizeof(value));
     uint8_t *result = cache_get(cache, key, &val_size);
     test(result[0] == 10, "Can retrieve first entry.");
     test(val_size != 0, "cache_get sets val_size pointer");
-    free(cache);
+
+    destroy_cache(cache);
 }
+
+void test_empty_size()
+{
+    cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
+    uint64_t space = cache_space_used(cache);
+    test(space == 0, "Empty cache uses zero space");
+
+    destroy_cache(cache);
+}
+
+void test_size()
+{
+    cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
+    uint8_t key[2] = {'a', '\0'};
+    uint8_t value[6] = {10,11,12,13,14,15};
+    uint32_t val_size = 0;
+    cache_set(cache, key, value, sizeof(value));
+
+    uint64_t space = cache_space_used(cache);
+    test(space == sizeof(value), "Cache computes first value size correctly");
+
+    destroy_cache(cache);
+}
+
+
+void test_size_after_delete()
+{
+    cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
+    uint8_t key[2] = {'a', '\0'};
+    uint8_t value[6] = {10,11,12,13,14,15};
+    uint32_t val_size = 0;
+    cache_set(cache, key, value, sizeof(value));
+
+    cache_delete(cache, key);
+
+    uint64_t space = cache_space_used(cache);
+    test(space == 0, "Cache size is zero after deleting all entries");
+
+    destroy_cache(cache);
+}
+
 
 int main(int argc, char *argv[])
 {
     test_get_entry();
-    cache_t cache = checkInit();
-    checkSet(cache);
+    checkSet();
+    test_empty_size();
+    test_size();
+    test_size_after_delete();
+    test_overflow();
+    printf("Testing...\n");
 }
