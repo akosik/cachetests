@@ -9,7 +9,7 @@
 //Values are stored in the buffer
 //Keys are stored in the form <key,start,end>
 //Keys are strings of length less than KEYMAXLEN
-typedef struct cache_real_obj 
+typedef struct cache_real_obj
 {
   hash_func hasher;
   uint64_t size;
@@ -65,7 +65,7 @@ meta_t get_key_loc(cache_t cache, _key_t key)
 }
 
 //Create a new cache object with the given capacity
-cache_t create_cache(uint64_t maxmem)
+cache_t create_cache(uint64_t maxmem, uint8_t* hash, uint8_t* add, uint8_t* remove)
 {
   cache_t cache = malloc(sizeof(cache_obj));
   cache->cache = malloc(sizeof(cache_real_obj));
@@ -88,7 +88,7 @@ void defrag(cache_t cache, uint8_t expand)
   cache_real_obj *c = cache->cache;
   uint64_t maxmem = (expand == 1) ? c->size * 2 : c->size;
   printf("   ");
-  cache_t new_cache = create_cache(maxmem);
+  cache_t new_cache = create_cache(maxmem, NULL, NULL, NULL);
   int i;
   for (i=0; i < c->num_buckets; i++)
     {
@@ -143,7 +143,7 @@ void print_buckets(cache_t cache){
     }
   }
 }
-    
+
 
 
 //slab_class is the slab class that we need to evict in order to make room for the incoming value
@@ -155,8 +155,8 @@ void cache_evict(cache_t cache,uint32_t slab_class){
   for (i; i < c->num_buckets; i++){
     node* current_node = c->buckets[i]->head;
     while(current_node != NULL){
-      if (  (current_node->meta->timer >= curr_max) && 
-	    (slab_class <= get_slab_class(c->slab_manager, current_node->meta->size)) 
+      if (  (current_node->meta->timer >= curr_max) &&
+	    (slab_class <= get_slab_class(c->slab_manager, current_node->meta->size))
          ){
 	    curr_max = current_node->meta->timer;
 	    max_node = current_node;
@@ -195,7 +195,7 @@ void cache_set(cache_t cache, _key_t key, val_t val, uint32_t val_size)
   //Create a new meta object and pair it to a slab address, and copy the value over
   meta_t next_meta = create_meta(cache,key,val_size);
   next_meta->address = get_address(c->slab_manager,val_size);
-  //enact eviction policy if we need space  
+  //enact eviction policy if we need space
   if (next_meta->address == NULL){
     uint32_t val_slab_class = get_slab_class(c->slab_manager, val_size);
     cache_evict(cache, val_slab_class);
@@ -207,7 +207,7 @@ void cache_set(cache_t cache, _key_t key, val_t val, uint32_t val_size)
       return;
     }
   }
- 
+
   memcopy(val, next_meta->address, val_size);
 
   //Add the meta to the appropriate bucket for key hashing
@@ -220,11 +220,11 @@ val_t cache_get(cache_t cache, _key_t key, uint32_t *val_size)
 {
   bucket_timer_up(cache);
   meta_t key_loc = get_key_loc(cache,key);
-  if (key_loc == NULL) 
+  if (key_loc == NULL)
     {
       return NULL;
     }
-  else 
+  else
     {
       *val_size = key_loc->size;
       key_loc->timer = 0;
@@ -239,7 +239,7 @@ void cache_delete(cache_t cache, _key_t key)
 {
   cache_real_obj* c = cache->cache;
   meta_t key_loc = get_key_loc(cache,key);
-  if (key_loc == NULL) 
+  if (key_loc == NULL)
     {
       printf("Key \"%s\" not found for deletion\n.",key);
       return;

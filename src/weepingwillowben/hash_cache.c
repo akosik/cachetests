@@ -42,7 +42,7 @@ struct user_identifier{//declared in replacement.h
     link_t * linkpp;
 };
 
-cache_t create_cache(uint64_t maxmem,hash_func h_fn){
+cache_t create_cache(uint64_t maxmem,hash_func h_fn, uint8_t* add, uint8_t* remove){
     cache_t n_cache = calloc(1,sizeof(struct cache_obj));
 
     n_cache->maxmem = maxmem;

@@ -3,7 +3,7 @@
 // cache.h - header file for the cache implementation.
 //
 // This is the header file for my cache API. It implements all the basic
-// functions of the cache and requires that the user include their own 
+// functions of the cache and requires that the user include their own
 // implementation for their eviction policy. I've implemented a default
 // policy in the included file header "lru.h" which in acts as the
 // modifiable API of the LRU eviction policy. I've also highlighted
@@ -20,14 +20,14 @@ typedef const void *val_type;
 typedef uint64_t (*hash_func)(key_type key);
 
 
-// Struct cache_obj. This contains a pointer to a hash function, 
+// Struct cache_obj. This contains a pointer to a hash function,
 // values for the maximum memory capacity, the current occupied
 // memory, the number of total buckets in the cache, and the number of
 // occupied buckets. It also contains an array of cache_keyval elements,
 // and a user defined datastructure for the eviction policy. The keyvals
 // struct is linked to the LRU eviction policy so I've moved that over
-// to lru.h to keep things cleaner. To implement the LRU policy as default, 
-// the evict_t struct and related methods are all defined in the lru.h 
+// to lru.h to keep things cleaner. To implement the LRU policy as default,
+// the evict_t struct and related methods are all defined in the lru.h
 // header file which can be  modified by the user if desired.
 struct cache_obj{
 	// Pointer to a hash function that should be user defined,
@@ -39,7 +39,7 @@ struct cache_obj{
 	uint64_t occupiedmemory;
 	uint64_t buckets;
 	uint64_t occupiedbuckets;
-	
+
 	// An array of cache_keyvals that contain the elements we insert
 	// into the cache. Defined in lru.h
 	struct cache_keyval * keyvals; // Must be defined by user
@@ -50,7 +50,7 @@ typedef struct cache_obj *cache_t;
 
 // Create a new cache object with a given maximum memory capacity
 // and a hash function.
-cache_t create_cache(uint64_t maxmem, hash_func hash);
+cache_t create_cache(uint64_t maxmem, hash_func hash, uint8_t* add, uint8_t* remove);
 
 // Add a <key, value> pair to the cache.
 // If key already exists, it will overwrite the old value.

@@ -12,7 +12,7 @@ typedef uint64_t (*hash_func)(_key_t key);
 typedef void (*rpmt_func)(cache_t cache);
 
 // Create a new cache object with a given maximum memory capacity.
-cache_t create_cache(uint64_t maxmem);
+cache_t create_cache(uint64_t maxmem, uint8_t* hash, uint8_t* add, uint8_t* remove);
 
 // Add a <key, value> pair to the cache.
 // If key already exists, it will overwrite the old value.
