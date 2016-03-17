@@ -200,17 +200,20 @@ void get_nonexistent()
 
 void resize_maybe()
 {
-  cache_t cache = init();
-  uint64_t i = 0;
-  uint8_t *key = malloc(10000);
-  for(; i <= 1000; ++i)
+  cache_t cache = create_cache(100000,NULL,NULL,NULL);
+  uint64_t i = 1;
+  uint8_t *key = malloc(100000);
+  memset(key,0,10000);
+  for(; i <= 10000; ++i)
     {
-      strcat(key, "h");
-      cache_set(cache,key,&i,sizeof(uint8_t));
+      strcat(key,"h");
+      cache_set(cache,key,&i,sizeof(uint64_t));
     }
+  uint32_t val_size = 0;
+  uint64_t *val = (uint64_t*)cache_get(cache,key,&val_size);
+  test(*val == 10000,"cache resizes without failure (initial table size checked, all should resize, none should evict)");
   free(key);
-  //destroy_cache(cache);
-  test(true,"cache resizes (most likely) without failure");
+  destroy_cache(cache);
 }
 
 void val_too_big()
@@ -219,8 +222,10 @@ void val_too_big()
   key_type key = "big";
   char *large = "this value is far too big for this tiny cache made by init_tiny";
   cache_set(cache,key,large, strlen(large) + 1);
-  test(true,"if there's no error message on the line above, or the program halted, there's probably a bug in handling values that are too big for the cache");
-  free(cache);
+  uint32_t val_size = 0;
+  char *ret = (char*)cache_get(cache,key,&val_size);
+  test(ret != NULL ? strcmp(ret,"this value is far too big for this tiny cache made by init_tiny") : true,"cache doesn't save values that are too big to fit in the user specified mem space");
+  destroy_cache(cache);
 }
 
 void val_too_big_but_replacing()
@@ -241,7 +246,21 @@ void val_too_big_but_replacing()
   uint8_t *imstillhere = (uint8_t*) cache_get(cache,standin,&val_size);
 
   test(imstillhere != NULL,"cache doesnt evict if a value that would cause memory to exceed maxmem is replacing a value in such a way not to exceed maxmem");
+  destroy_cache(cache);
+}
 
+void cache_mallocing_vals()
+{
+  cache_t cache = init();
+  key_type unique = "we are part of the collective, we have no name";
+  uint8_t mutableval = 34;
+  cache_set(cache,unique,&mutableval,sizeof(uint8_t));
+
+  mutableval = 23;
+  uint32_t val_size = 0;
+  uint8_t *valnow = (uint8_t*)cache_get(cache,unique,&val_size);
+  test(*valnow == 34,"cache malloc's values instead of storing references to (possible) local variables");
+  destroy_cache(cache);
 }
 
 int main(int argc, char *argv[])
@@ -259,4 +278,5 @@ int main(int argc, char *argv[])
   //test_overflow();
   val_too_big();
   val_too_big_but_replacing();
+  cache_mallocing_vals();
 }
