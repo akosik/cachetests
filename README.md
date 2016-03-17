@@ -56,6 +56,7 @@ Tests if the cache updates the value of a key i.e. a value is inserted with the 
 
 GN ```get_nonexistent()```:
 Tests if cache\_get returns NULL when the key searched for is not in the cache.
+
 RES ```resize_maybe()```:
 Tests if the cache can resize without failure.  The name should be changed, as it has been confirmed that all caches will resize in this test.
 
