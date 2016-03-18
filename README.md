@@ -93,3 +93,23 @@ VTBR |  :x:    |  :x:    |   :x:   |   :x:   |  :x:    |   :+1:  |  :+1:   |
 CMV  |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :x:   |  :+1:   |
 VTAR |  :x:    |  :x:    |   :x:   |   :+1:  |  :+1:   |   :x:   |  :x:    |
 SMEM |  :x:    |  :+1:   |   :+1:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+
+### Group 1 Issues
+
+No crashes.
+
+### Group 2 Issues
+
+The LRU test triggers a failed assertion in function `evict_get`. The same error is triggered with the GN test. It seems the cache fails when asked to get something not in the cache. That's a serious bug!
+
+### Group 3 Issues
+Group 3's program often fails with complaints about not being able to allocate any slabs. This is partly because we are testing with small cache sizes.
+
+### Group 4 Issues
+
+### Group 5 Issues
+
+### Group 6 Issues
+The LRU test triggers a invalid read in `link_list_top` causing a segmentation fault.
+
+### Group 7 Issues
