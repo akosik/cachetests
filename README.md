@@ -72,3 +72,24 @@ Tests if the cache takes into account the size of the value being replaced when 
 CMV ```cache_mallocing_vals()```:
 Tests if the cache stores its own copy of each value and key instead of relying on the user not to free things/exit functions.
 
+
+## Test Results
+
+Test | Group 1 | Group 2 | Group 3 | Group 4 | Group 5 | Group 6 | Group 7 |
+-----|---------|---------|---------|---------|---------|---------|---------|
+TGE  |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+SM   |  :+1:   |  :+1:   |   :x:   |   :X:   |  :+1:   |   :x:   |  :+1:   |
+TES  |  :+1:   |  :+1:   |   :+1:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+TS   |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+TSD  |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+EVIC |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+LRU  |  :x:    |  :x:    |   :x:   |   :+1:  |  :+1:   |   :x:   |  :+1:   |
+SS   |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+GM   |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+GN   |  :+1:   |  :x:    |   :+1:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+RES  |  :x:    |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+VTB  |  :x:    |  :x:    |   :x:   |   :+1:  |  :+1:   |   :x:   |  :+1:   |
+VTBR |  :x:    |  :x:    |   :x:   |   :x:   |  :x:    |   :+1:  |  :+1:   |
+CMV  |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :x:   |  :+1:   |
+VTAR |  :x:    |  :x:    |   :x:   |   :+1:  |  :+1:   |   :x:   |  :x:    |
+SMEM |  :x:    |  :+1:   |   :+1:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |

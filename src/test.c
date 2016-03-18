@@ -333,21 +333,21 @@ void cache_mallocing_vals()
 
 int main(int argc, char *argv[])
 {
-  test_get_entry();
+    //test_get_entry();
   //set_multiple();
-  test_empty_size();
-  test_size();
-  test_size_after_delete();
-  eviction();
+    //  test_empty_size();
+    //  test_size();
+    //  test_size_after_delete();
+    //  eviction();
     eviction_LRU();
-  struct_set();
-  get_modified();
+    //  struct_set();
+    //  get_modified();
   //get_nonexistent();
   //resize_maybe();
   //test_overflow();
   //val_too_big();
   //val_too_big_but_replacing();
-  cache_mallocing_vals();
+    //  cache_mallocing_vals();
   //val_too_big_and_replacing();
-  cache_does_not_change_maxmem();
+    //  cache_does_not_change_maxmem();
 }
