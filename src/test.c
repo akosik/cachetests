@@ -228,6 +228,18 @@ void val_too_big()
   destroy_cache(cache);
 }
 
+void cache_does_not_change_maxmem()
+{
+  cache_t cache = init_tiny();
+  uint64_t maxmemb4 = cache_space_used(cache);
+  key_type key = "big";
+  char *large = "this value is far too big for this tiny cache made by init_tiny";
+  cache_set(cache,key,large, strlen(large) + 1);
+  uint64_t maxmem = cache_space_used(cache);
+  test(maxmem == maxmemb4,"cache does not change user specified maxmem bound");
+  destroy_cache(cache);
+}
+
 void val_too_big_but_replacing()
 {
   cache_t cache = create_cache(82,NULL,NULL,NULL);
@@ -249,6 +261,27 @@ void val_too_big_but_replacing()
   destroy_cache(cache);
 }
 
+void val_too_big_and_replacing()
+{
+  cache_t cache = create_cache(89,NULL,NULL,NULL);
+  key_type standin = "i shouldnt get removed";
+  uint64_t standinval = 34;
+  cache_set(cache,standin,&standinval,sizeof(uint64_t));
+  key_type key = "doppleganger";
+  uint8_t string[80] = "i shall remain";
+  cache_set(cache,key,string,80);
+
+  uint8_t new[90];
+  cache_set(cache,key,&new,90);
+
+  uint32_t val_size = 0;
+
+  uint8_t *notreplaced = (uint8_t*) cache_get(cache,key,&val_size);
+
+  test(!strcmp(notreplaced,"i shall remain"),"cache doesnt replace a value if the new value is too big for the cache");
+  destroy_cache(cache);
+}
+
 void cache_mallocing_vals()
 {
   cache_t cache = init();
@@ -266,17 +299,19 @@ void cache_mallocing_vals()
 int main(int argc, char *argv[])
 {
   test_get_entry();
-  set_multiple();
+  //set_multiple();
   test_empty_size();
   test_size();
   test_size_after_delete();
   eviction();
   struct_set();
   get_modified();
-  get_nonexistent();
-  resize_maybe();
+  //get_nonexistent();
+  //resize_maybe();
   //test_overflow();
-  val_too_big();
-  val_too_big_but_replacing();
+  //val_too_big();
+  //val_too_big_but_replacing();
   cache_mallocing_vals();
+  //val_too_big_and_replacing();
+  cache_does_not_change_maxmem();
 }
