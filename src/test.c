@@ -155,6 +155,40 @@ void eviction_couple()
   destroy_cache(cache);
 }
 
+void eviction_LRU()
+{
+  cache_t cache = create_cache(10,NULL,NULL,NULL);
+  key_type
+    key0 = "hello",
+    key1 = "thenumber3",
+    key2 = "goodbye",
+    key3 = "wow";
+  uint8_t
+    value0 = 1,
+    value1 = 3;
+  uint32_t value2 = 304;
+  uint64_t value3 = 123123124;
+
+  cache_set(cache,key0,&value0,sizeof(uint8_t));
+  cache_set(cache,key1,&value1,sizeof(uint8_t));
+  cache_set(cache,key2,&value2,sizeof(uint32_t));
+
+  uint32_t val_size = 0;
+  uint64_t *val;
+
+  // access first input
+  val = (uint64_t*) cache_get(cache,key0,&val_size);
+
+  // Set something that will require an eviction
+  cache_set(cache,key3,&value3,sizeof(uint64_t));
+
+  // now get the last used value
+  val = (uint64_t*) cache_get(cache,key1,&val_size);
+
+  test(val == NULL,"Last accessed key is evicted");
+  destroy_cache(cache);
+}
+
 //test struct for next test
 struct test_struct
 {
@@ -348,4 +382,5 @@ int main(int argc, char *argv[])
   val_too_big_and_replacing();
   cache_does_not_change_maxmem();
   custom_hash();
+  eviction_LRU();
 }

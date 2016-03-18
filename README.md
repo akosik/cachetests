@@ -48,6 +48,9 @@ Tests if the cache decrements its size once a value is removed.
 EVIC ```eviction()```:
 Tests if keys are evicted to make room for new keys. This only tests if the basic eviciton works i.e. a few keys are evicted. A test for scale will need to be added.
 
+LRU ```eviction_LRU()```:
+Tests if cache evicts the last used value. Inputs a few values, access first cached value, adds a value that will cause an eviction, and then checks that the second added value gets evicted.
+
 SS ```struct_set()```:
 Tests if the cache can store more complex values such as structs.
 
@@ -68,3 +71,45 @@ Tests if the cache takes into account the size of the value being replaced when 
 
 CMV ```cache_mallocing_vals()```:
 Tests if the cache stores its own copy of each value and key instead of relying on the user not to free things/exit functions.
+
+
+## Test Results
+
+Test | Group 1 | Group 2 | Group 3 | Group 4 | Group 5 | Group 6 | Group 7 |
+-----|---------|---------|---------|---------|---------|---------|---------|
+TGE  |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+SM   |  :+1:   |  :+1:   |   :x:   |   :x:   |  :+1:   |   :x:   |  :+1:   |
+TES  |  :+1:   |  :+1:   |   :+1:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+TS   |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+TSD  |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+EVIC |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+LRU  |  :x:    |  :x:    |   :x:   |   :+1:  |  :+1:   |   :x:   |  :+1:   |
+SS   |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+GM   |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+GN   |  :+1:   |  :x:    |   :+1:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+RES  |  :x:    |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+VTB  |  :x:    |  :x:    |   :x:   |   :+1:  |  :+1:   |   :x:   |  :+1:   |
+VTBR |  :x:    |  :x:    |   :x:   |   :x:   |  :x:    |   :+1:  |  :+1:   |
+CMV  |  :+1:   |  :+1:   |   :x:   |   :+1:  |  :+1:   |   :x:   |  :+1:   |
+VTAR |  :x:    |  :x:    |   :x:   |   :+1:  |  :+1:   |   :x:   |  :x:    |
+SMEM |  :x:    |  :+1:   |   :+1:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
+
+### Group 1 Issues
+
+No crashes.
+
+### Group 2 Issues
+
+The LRU test triggers a failed assertion in function `evict_get`. The same error is triggered with the GN test. It seems the cache fails when asked to get something not in the cache. That's a serious bug!
+
+### Group 3 Issues
+Group 3's program often fails with complaints about not being able to allocate any slabs. This is partly because we are testing with small cache sizes.
+
+### Group 4 Issues
+
+### Group 5 Issues
+
+### Group 6 Issues
+The LRU test triggers a invalid read in `link_list_top` causing a segmentation fault.
+
+### Group 7 Issues
