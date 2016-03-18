@@ -144,6 +144,41 @@ void eviction()
   destroy_cache(cache);
 }
 
+void eviction_LRU()
+{
+  cache_t cache = init_tiny();
+  key_type
+    key0 = "hello",
+    key1 = "thenumber3",
+    key2 = "goodbye",
+    key3 = "wow";
+  uint8_t
+    value0 = 1,
+    value1 = 3;
+  uint32_t value2 = 304;
+  uint64_t value3 = 123123124;
+
+  cache_set(cache,key0,&value0,sizeof(uint8_t));
+  cache_set(cache,key1,&value1,sizeof(uint8_t));
+  cache_set(cache,key2,&value2,sizeof(uint32_t));
+
+  uint32_t val_size = 0;
+  uint64_t *val;
+  
+  // access first input
+  val = (uint64_t*) cache_get(cache,key0,&val_size);
+
+  // Set something that will require an eviction
+  cache_set(cache,key3,&value3,sizeof(uint64_t));
+
+  // now get the last used value
+  val = (uint64_t*) cache_get(cache,key1,&val_size);
+
+  test(val == NULL,"Last accessed key is evicted");
+  destroy_cache(cache);
+}
+
+
 struct test_struct
 {
   uint8_t *word;
@@ -265,18 +300,19 @@ void cache_mallocing_vals()
 
 int main(int argc, char *argv[])
 {
-  test_get_entry();
-  set_multiple();
-  test_empty_size();
-  test_size();
-  test_size_after_delete();
+  /* /\* test_get_entry(); *\/ */
+  /* /\* set_multiple(); *\/ */
+  /* /\* test_empty_size(); *\/ */
+  /* /\* test_size(); *\/ */
+  /* /\* test_size_after_delete(); *\/ */
   eviction();
-  struct_set();
-  get_modified();
-  get_nonexistent();
-  resize_maybe();
-  //test_overflow();
-  val_too_big();
-  val_too_big_but_replacing();
-  cache_mallocing_vals();
+  eviction_LRU();
+  /* struct_set(); */
+  /* get_modified(); */
+  /* get_nonexistent(); */
+  /* resize_maybe(); */
+  /* //test_overflow(); */
+  /* val_too_big(); */
+  /* val_too_big_but_replacing(); */
+  /* cache_mallocing_vals(); */
 }

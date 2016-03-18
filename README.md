@@ -48,6 +48,9 @@ Tests if the cache decrements its size once a value is removed.
 EVIC ```eviction()```:
 Tests if keys are evicted to make room for new keys. This only tests if the basic eviciton works i.e. a few keys are evicted. A test for scale will need to be added.
 
+LRU ```eviction_LRU()```:
+Tests if cache evicts the last used value. Inputs a few values, access first cached value, adds a value that will cause an eviction, and then checks that the second added value gets evicted.
+
 SS ```struct_set()```:
 Tests if the cache can store more complex values such as structs.
 
@@ -68,3 +71,4 @@ Tests if the cache takes into account the size of the value being replaced when 
 
 CMV ```cache_mallocing_vals()```:
 Tests if the cache stores its own copy of each value and key instead of relying on the user not to free things/exit functions.
+
