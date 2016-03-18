@@ -4,12 +4,14 @@
 #include "testing.h"
 #include "cache.h"
 
+//Initializes cache to maxmem of 255
 cache_t init()
 {
   cache_t cache = create_cache(255,NULL,NULL,NULL);
   return cache;
 }
 
+//Sets multiple values and checks if they are there
 void set_multiple()
 {
   cache_t cache = init();
@@ -55,7 +57,8 @@ uint64_t our_modified_jenkins(key_type key)
     return (uint64_t) hash;
 }
 
-void test_get_entry()
+//Checks if a custom hash at least doesn't crash the cache (since some didn't have this customization
+void custom_hash()
 {
     uint8_t key[2] = {'a', '\0'};
     uint8_t value[6] = {10,11,12,13,14,15};
@@ -63,13 +66,28 @@ void test_get_entry()
     cache_t cache = create_cache(100 * sizeof(value), &our_modified_jenkins, NULL, NULL);
 
     cache_set(cache, key, value, sizeof(value));
-    uint8_t *result = cache_get(cache, key, &val_size);
-    test(result[0] == 10, "Can retrieve first entry.");
+    uint8_t *ret = (uint8_t*)cache_get(cache, key, &val_size);
+    test(ret[0] == 10 && ret[1] == 11 && ret[2] == 12 && ret[3] == 13 && ret[4] == 14 && ret[5] == 15, "cache_get works when given a custom hash (doesn't have to use custom hash)");
+
+    destroy_cache(cache);
+}
+
+//Tests if cache returns val_size from cache get
+void test_get_entry()
+{
+    uint8_t key[2] = {'a', '\0'};
+    uint8_t value[6] = {10,11,12,13,14,15};
+    uint32_t val_size = 0;
+    cache_t cache = create_cache(100 * sizeof(value), NULL, NULL, NULL);
+
+    cache_set(cache, key, value, sizeof(value));
+    cache_get(cache, key, &val_size);
     test(val_size != 0, "cache_get sets val_size pointer");
 
     destroy_cache(cache);
 }
 
+//cache has empty memsize used right after creation
 void test_empty_size()
 {
     cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
@@ -79,6 +97,7 @@ void test_empty_size()
     destroy_cache(cache);
 }
 
+//cache updates memsize after cache_set
 void test_size()
 {
     cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
@@ -93,7 +112,7 @@ void test_size()
     destroy_cache(cache);
 }
 
-
+//cache decrements memsize used after a key is removed
 void test_size_after_delete()
 {
     cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
@@ -110,40 +129,33 @@ void test_size_after_delete()
     destroy_cache(cache);
 }
 
-cache_t init_tiny()
+//cache evicts keys to make room for new ones (jmcosel has a memsize min of 64)
+void eviction_couple()
 {
-  cache_t cache = create_cache(10,NULL,NULL,NULL);
-  return cache;
-}
-
-void eviction()
-{
-  cache_t cache = init_tiny();
+  cache_t cache = create_cache(64,NULL,NULL,NULL);
   key_type
     key0 = "hello",
     key1 = "thenumber3",
     key2 = "goodbye",
     key3 = "wow";
-  uint8_t
+  uint64_t
     value0 = 1,
     value1 = 3;
-  uint32_t value2 = 304;
-  uint64_t value3 = 123123124;
+  uint8_t chararray[60];
+  uint8_t value3 = 253;
 
-  cache_set(cache,key0,&value0,sizeof(uint8_t));
-  cache_set(cache,key1,&value1,sizeof(uint8_t));
-  cache_set(cache,key2,&value2,sizeof(uint32_t));
-  cache_set(cache,key3,&value3,sizeof(uint64_t));
+  cache_set(cache,key0,&value0,sizeof(uint64_t));
+  cache_set(cache,key1,&value1,sizeof(uint64_t));
+  cache_set(cache,key2,chararray,60);
+  cache_set(cache,key3,&value3,sizeof(uint8_t));
 
   uint32_t val_size = 0;
-  uint64_t *val;
-
-  val = (uint64_t*) cache_get(cache,key3,&val_size);
-
-  test(*val == 123123124,"keys are evicted to make space for new values");
+  uint8_t *val = (uint8_t*) cache_get(cache,key3,&val_size);
+  test(*val == 253,"keys are evicted to make space for new values");
   destroy_cache(cache);
 }
 
+//test struct for next test
 struct test_struct
 {
   uint8_t *word;
@@ -151,6 +163,7 @@ struct test_struct
   uint8_t *stuff;
 };
 
+//cache handles more complex val types
 void struct_set()
 {
   cache_t cache = init();
@@ -171,6 +184,7 @@ void struct_set()
     destroy_cache(cache);
 }
 
+//cache updates value if new key inserted is the same as one already in the cache
 void get_modified()
 {
   cache_t cache = init();
@@ -188,6 +202,7 @@ void get_modified()
   destroy_cache(cache);
 }
 
+//cache returns NULL for key that isn't in the cache
 void get_nonexistent()
 {
   cache_t cache = init();
@@ -198,7 +213,8 @@ void get_nonexistent()
   destroy_cache(cache);
 }
 
-void resize_maybe()
+//cache resizes properly (this does not check evict! (it took some time to isolate these tests) )
+void resize()
 {
   cache_t cache = create_cache(100000,NULL,NULL,NULL);
   uint64_t i = 1;
@@ -216,30 +232,33 @@ void resize_maybe()
   destroy_cache(cache);
 }
 
+//cache does not insert values that are too big for the cache
 void val_too_big()
 {
-  cache_t cache = init_tiny();
+  cache_t cache = create_cache(90,NULL,NULL,NULL);
   key_type key = "big";
-  char *large = "this value is far too big for this tiny cache made by init_tiny";
-  cache_set(cache,key,large, strlen(large) + 1);
+  char large[100];
+  cache_set(cache,key,large, 100);
   uint32_t val_size = 0;
   char *ret = (char*)cache_get(cache,key,&val_size);
-  test(ret != NULL ? strcmp(ret,"this value is far too big for this tiny cache made by init_tiny") : true,"cache doesn't save values that are too big to fit in the user specified mem space");
+  test(ret == NULL,"cache doesn't save values that are too big to fit in the user specified mem space");
   destroy_cache(cache);
 }
 
+//cache returns memused size == to 0 if the val being inserted is too big for the cache (the cache memsize == 0 if the cache didnt increase memsize
+//because the value is too big for the cache) this test was ignored if val_too_big just segfaulted
 void cache_does_not_change_maxmem()
 {
-  cache_t cache = init_tiny();
-  uint64_t maxmemb4 = cache_space_used(cache);
+  cache_t cache = create_cache(90,NULL,NULL,NULL);
   key_type key = "big";
-  char *large = "this value is far too big for this tiny cache made by init_tiny";
-  cache_set(cache,key,large, strlen(large) + 1);
-  uint64_t maxmem = cache_space_used(cache);
-  test(maxmem == maxmemb4,"cache does not change user specified maxmem bound");
+  char large[91];
+  cache_set(cache,key,large, 91);
+  uint64_t memused = cache_space_used(cache);
+  test(memused == 0,"cache does not change user specified maxmem bound");
   destroy_cache(cache);
 }
 
+//cache doesn't evict any keys if the new val is replacing one in the cache such that memsize is never exceeded
 void val_too_big_but_replacing()
 {
   cache_t cache = create_cache(82,NULL,NULL,NULL);
@@ -261,6 +280,7 @@ void val_too_big_but_replacing()
   destroy_cache(cache);
 }
 
+//cache doesn't remove the old val if the new val is too big for the cache anyways
 void val_too_big_and_replacing()
 {
   cache_t cache = create_cache(89,NULL,NULL,NULL);
@@ -282,6 +302,7 @@ void val_too_big_and_replacing()
   destroy_cache(cache);
 }
 
+//cache stores its own values instead of references passed in by the user
 void cache_mallocing_vals()
 {
   cache_t cache = init();
@@ -296,22 +317,35 @@ void cache_mallocing_vals()
   destroy_cache(cache);
 }
 
+//cache handles large inserts
+void cache_insert_huge()
+{
+  cache_t cache = create_cache(512,NULL,NULL,NULL);
+  key_type huge = "large";
+  uint8_t *largeval = malloc(51);
+  cache_set(cache,huge,largeval,51);
+  uint32_t val_size = 0;
+  uint8_t *retval = (uint8_t*)cache_get(cache,huge,&val_size);
+  test(retval != NULL,"cache handles inserts of huge values");
+}
+
 int main(int argc, char *argv[])
 {
+  cache_insert_huge();
   test_get_entry();
-  //set_multiple();
+  set_multiple();
   test_empty_size();
   test_size();
   test_size_after_delete();
-  eviction();
+  eviction_couple();
   struct_set();
   get_modified();
-  //get_nonexistent();
-  //resize_maybe();
-  //test_overflow();
-  //val_too_big();
-  //val_too_big_but_replacing();
+  get_nonexistent();
+  resize();
+  val_too_big();
+  val_too_big_but_replacing();
   cache_mallocing_vals();
-  //val_too_big_and_replacing();
+  val_too_big_and_replacing();
   cache_does_not_change_maxmem();
+  custom_hash();
 }
