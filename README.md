@@ -28,11 +28,11 @@ And finally, to delete all test executables, enter
 ```
 make clean_all
 ```
-###Descriptions of tests (in Progress):
+###Descriptions of tests:
 
-TGE ```test_get_entry()```:
-Tests cache\_get for a single key, so obviously it also uses cache\_set to put the pair in the cache. This also checks if cache\_get returns a value size in the pointer that is passed to cache\_get. These tests need to be separated in the final set of tests.
-  
+ValSize ```test_get_valsize()```:
+Checks if `cache_get` inserts the value size into val_size.
+
 SM ```set_multiple()```:
 Tests cache_get for multiple keys.
 
