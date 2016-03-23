@@ -11,7 +11,7 @@ cache_t init()
   return cache;
 }
 
-//Sets multiple values and checks if they are there
+//Sets 4 values and then gets all 4, checks if the values were set correctly
 void set_multiple()
 {
   cache_t cache = init();
@@ -57,7 +57,8 @@ uint64_t our_modified_jenkins(key_type key)
     return (uint64_t) hash;
 }
 
-//Checks if a custom hash at least doesn't crash the cache (since some didn't have this customization
+//Checks if a custom hash at least doesn't crash the cache (since some didn't have this customization)
+//Sets a value with the custome hash and gets it to see if it was set properly
 void custom_hash()
 {
     uint8_t key[2] = {'a', '\0'};
@@ -72,7 +73,8 @@ void custom_hash()
     destroy_cache(cache);
 }
 
-//Tests if cache returns val_size from cache get
+//Tests if cache returns val_size from cache
+//sets a value and checks if the val_size from get is equal to the set value size
 void test_get_entry()
 {
     uint8_t key[2] = {'a', '\0'};
@@ -88,6 +90,7 @@ void test_get_entry()
 }
 
 //cache has empty memsize used right after creation
+//creates a cache and checks memused
 void test_empty_size()
 {
     cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
@@ -98,6 +101,7 @@ void test_empty_size()
 }
 
 //cache updates memsize after cache_set
+//creates a cache, sets a value, and checks if memsize increased
 void test_size()
 {
     cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
@@ -113,6 +117,7 @@ void test_size()
 }
 
 //cache decrements memsize used after a key is removed
+//same as above but it then deletes the value and sees if the memsize decreased
 void test_size_after_delete()
 {
     cache_t cache = create_cache(1024, &our_modified_jenkins, NULL, NULL);
@@ -130,6 +135,8 @@ void test_size_after_delete()
 }
 
 //cache evicts keys to make room for new ones (jmcosel has a memsize min of 64)
+//creates a cache with memsize of 64 and sets 4 values so that the 3rd will
+//cause an eviction (if they didn't mess with the maxmem)
 void eviction_couple()
 {
   cache_t cache = create_cache(64,NULL,NULL,NULL);
@@ -155,9 +162,12 @@ void eviction_couple()
   destroy_cache(cache);
 }
 
-void eviction_LRU()
+//sets 4 values, gets the first value set, and sets a new value
+//big enough to force an eviction, checks if the second key (least recently used)
+//is removed, the third is removed, and finally if the first value added is still there
+void evict_after_get()
 {
-  cache_t cache = create_cache(10,NULL,NULL,NULL);
+  cache_t cache = create_cache(64,NULL,NULL,NULL);
   key_type
     key0 = "hello",
     key1 = "thenumber3",
@@ -166,12 +176,12 @@ void eviction_LRU()
   uint8_t
     value0 = 1,
     value1 = 3;
-  uint32_t value2 = 304;
+  uint8_t value2[60];
   uint64_t value3 = 123123124;
 
   cache_set(cache,key0,&value0,sizeof(uint8_t));
   cache_set(cache,key1,&value1,sizeof(uint8_t));
-  cache_set(cache,key2,&value2,sizeof(uint32_t));
+  cache_set(cache,key2,&value2,60);
 
   uint32_t val_size = 0;
   uint64_t *val;
@@ -183,9 +193,14 @@ void eviction_LRU()
   cache_set(cache,key3,&value3,sizeof(uint64_t));
 
   // now get the last used value
-  val = (uint64_t*) cache_get(cache,key1,&val_size);
+  uint8_t *val0 = (uint8_t*) cache_get(cache,key0,&val_size);
+  uint8_t *val1 = (uint8_t*) cache_get(cache,key1,&val_size);
+  uint8_t *val2 = (uint8_t*) cache_get(cache,key2,&val_size);
+  uint64_t *val3 = (uint64_t*) cache_get(cache,key3,&val_size);
 
-  test(val == NULL,"Last accessed key is evicted");
+  printf("%d,%d,%d,%d\n",val0,val1,val2,val3);
+
+  test(val0 != NULL && val1 == NULL && val2 == NULL && *val3 == 123123124,"Last accessed key is evicted");
   destroy_cache(cache);
 }
 
@@ -198,6 +213,7 @@ struct test_struct
 };
 
 //cache handles more complex val types
+//creates a struct, sets it in the cache, and checks if all of its elements are there
 void struct_set()
 {
   cache_t cache = init();
@@ -219,6 +235,7 @@ void struct_set()
 }
 
 //cache updates value if new key inserted is the same as one already in the cache
+//inserts two values with the same key and checks if the value was updated
 void get_modified()
 {
   cache_t cache = init();
@@ -237,6 +254,7 @@ void get_modified()
 }
 
 //cache returns NULL for key that isn't in the cache
+//creates a cache and gets a key not in the cache, checks if it's null
 void get_nonexistent()
 {
   cache_t cache = init();
@@ -248,6 +266,9 @@ void get_nonexistent()
 }
 
 //cache resizes properly (this does not check evict! (it took some time to isolate these tests) )
+//creates 100000 byte cache, malloc's a 100000 byte "String" iterates to 10000 and saves the iteration number
+//with a key formed from i concatenations of "h"
+//checks if the last value inserted is correct, mostly testing to see if it crashes or not
 void resize()
 {
   cache_t cache = create_cache(100000,NULL,NULL,NULL);
@@ -267,6 +288,7 @@ void resize()
 }
 
 //cache does not insert values that are too big for the cache
+//inserts a value that is larger than the size of the cache
 void val_too_big()
 {
   cache_t cache = create_cache(90,NULL,NULL,NULL);
@@ -293,6 +315,8 @@ void cache_does_not_change_maxmem()
 }
 
 //cache doesn't evict any keys if the new val is replacing one in the cache such that memsize is never exceeded
+//sets a value of size 80 bytes, inserts a value with the same key of size 8 bytes
+//checks if the least recently used value is still there (no evictions were performed)
 void val_too_big_but_replacing()
 {
   cache_t cache = create_cache(82,NULL,NULL,NULL);
@@ -315,6 +339,14 @@ void val_too_big_but_replacing()
 }
 
 //cache doesn't remove the old val if the new val is too big for the cache anyways
+//creates a cache of size 89, sets 2 values, the second of which has size 80
+//inserts a value of size 90 with the same key as the second value inserted
+//checks if the value of size 80 (the second one inserted is still there)
+//this test is controversial insofar as it is implementation independent whether
+//the cache should keep an old value if it cannot fit the new one in the cache
+//ideally the cache would store the old val but make note that it is old
+//so that it may sue the old in times of high network traffic
+//a note will be made in the README
 void val_too_big_and_replacing()
 {
   cache_t cache = create_cache(89,NULL,NULL,NULL);
@@ -337,6 +369,8 @@ void val_too_big_and_replacing()
 }
 
 //cache stores its own values instead of references passed in by the user
+//sets a value in the cache and then changes the value locally, then checks
+//if the value in the cache changed
 void cache_mallocing_vals()
 {
   cache_t cache = init();
@@ -352,6 +386,7 @@ void cache_mallocing_vals()
 }
 
 //cache handles large inserts
+//inserts a val of size 51
 void cache_insert_huge()
 {
   cache_t cache = create_cache(512,NULL,NULL,NULL);
@@ -363,8 +398,28 @@ void cache_insert_huge()
   test(retval != NULL,"cache handles inserts of huge values");
 }
 
+//sets a value in the cache, retrieves that value, changes the value pointed to by the return
+//value of cache get, sees if the value in the cache has changed
+void cache_returns_bad_pointers()
+{
+  cache_t cache = init();
+  key_type key = "a value";
+  uint8_t num = 25;
+  cache_set(cache,key,&num,sizeof(uint8_t));
+
+  uint32_t val_size = 0;
+  uint8_t *ret = (uint8_t*)cache_get(cache,key,&val_size);
+
+  *ret = 5;
+  val_size = 0;
+  uint8_t twentyfive = *(uint8_t*)cache_get(cache,key,&val_size);
+  test(twentyfive == 25, "cache returns pointers to copied values, not in cache, when returning from cache_get");
+}
+
 int main(int argc, char *argv[])
 {
+  evict_after_get();
+  cache_returns_bad_pointers();
   cache_insert_huge();
   test_get_entry();
   set_multiple();
@@ -382,5 +437,4 @@ int main(int argc, char *argv[])
   val_too_big_and_replacing();
   cache_does_not_change_maxmem();
   custom_hash();
-  eviction_LRU();
 }
