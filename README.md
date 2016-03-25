@@ -72,8 +72,11 @@ Tests if the cache takes into account the size of the value being replaced when 
 CMV ```cache_mallocing_vals()```:
 Tests if the cache stores its own copy of each value and key instead of relying on the user not to free things/exit functions.
 
-CH ```custom_hash```:
-Tests if the custom_hash function works for caches that implemented it.
+VTAR ```val_too_big_and_replacing```:
+Checks if the cache removes a value that is about to be replaced even though the value being inserted is too big for the cache.  We say the test fails if the old value is removed but this test seems to be implementation dependent (we may or may not wnat to keep old values in the cache.  if we are following the memcache paper designed we do want the cache to delete the old value.).  We thought it was good to include anyways.
+
+SMEM ```cache_does_not_change_maxmem()```:
+Tests if the cache modifies the maxmem value after the user sets it.
 
 CIH ```cache_insert_huge```:
 Checks if the cache can insert larger values into the cache.
@@ -82,6 +85,8 @@ CRBP ```cache_returns_bad_pointers```:
 Checks if the cache makes a copy of the value to return to the client in `cache_get` (as opposed to giving a pointer to the 
 value in the cache.
 
+CH ```custom_hash```:
+Tests if the custom_hash function works for caches that implemented it.
 
 ## Test Results
 
