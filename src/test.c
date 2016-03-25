@@ -75,7 +75,7 @@ void custom_hash()
 
 //Tests if cache returns val_size from cache
 //sets a value and checks if the val_size from get is equal to the set value size
-void test_get_entry()
+void test_get_valsize()
 {
     uint8_t key[2] = {'a', '\0'};
     uint8_t value[6] = {10,11,12,13,14,15};
@@ -421,7 +421,7 @@ int main(int argc, char *argv[])
   evict_after_get();
   cache_returns_bad_pointers();
   cache_insert_huge();
-  test_get_entry();
+  test_get_valsize();
   set_multiple();
   test_empty_size();
   test_size();
