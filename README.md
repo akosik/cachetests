@@ -48,7 +48,7 @@ Tests if the cache decrements its size once a value is removed.
 EVIC ```eviction_couple()```:
 Tests if keys are evicted to make room for new keys. This only tests if the basic eviciton works i.e. a few keys are evicted. A test for scale will need to be added.
 
-LRU ```evict_after_get()```:
+EAG ```evict_after_get()```:
 Tests if cache evicts the last used value. Inputs a few values, access first cached value, adds a value that will cause an eviction, and then checks that the second added value gets evicted, the first value added remains, and the thrid value added is removed.
 
 SS ```struct_set()```:
@@ -108,7 +108,7 @@ CRBP |  :x:    |  :+1:   |   :x:  |   :x:  |  :x:   |   :x:  |  :x:   |
 CH |  :+1:    |  :+1:   |   :x:  |   :+1:  |  :+1:   |   :+1:  |  :+1:   |
 
 ### Group 1 Issues
-Had a problem with resize and chamodified the max size of the cache after the user specified it.
+Had a problem with resize and the code modified the max size of the cache after the user specified it.
 
 ### Group 2 Issues
 The LRU test triggers a failed assertion in function `evict_get`. The same error is triggered with the GN test. It seems the cache fails when asked to get something not in the cache. That's a serious bug!  Most of the bugs come from the assertions, which, according to the 
@@ -118,13 +118,13 @@ api, should've been handled differently.
 Group 3's program often fails with complaints about not being able to allocate any slabs. This is partly because we are testing with small cache sizes.  Most of the bugs we reported for this cach emay not be actually from the bug we were testing for but we could not get this cache working properly.
 
 ### Group 4 Issues
-Did not implement val_size in `cache_get` and did not check if a value was replacing another before checking if the memory of the cache was full.
+Did not implement val_size in `cache_get` and did not check if a value was replacing another before checking if the memory of the cache was full.  In `cache_get`: Did not return a pointer to a value separate from the one in the cache.  Also failed to properly update the eviction policy in `cache_get`.
 
 ### Group 5 Issues
-Alec's cache, it was enlightening to work on my own cache because I had a lready known there was a bug in my code the day after submitting the last homework.  However, I could not tease it out in an isolated test (without inadvertently testing resize) because the bug only occured a very small portion of the time and requires very specific inserts.
+Alec's cache: it was enlightening to work on my own cache because I had already known there was a bug in my code the day after submitting the last homework.  However, I could not tease it out in an isolated test (without inadvertently testing resize) because the bug only occured a very small portion of the time and requires very specific inserts. This cache also had issues with returning a pointer to an object in the cache when returning from `cache_get` and failing to update the eviction policy properly in `cache_get`.
 
 ### Group 6 Issues
-The LRU test triggers a invalid read in `link_list_top` causing a segmentation fault. Does not copy values into the cache but only stores references to user owned values.  This made it hard to keep track of other bugs.
+The EAG test triggers an invalid read in `link_list_top` causing a segmentation fault. Does not copy values into the cache but only stores references to user-owned values.  This made it hard to keep track of other bugs.
 
 ### Group 7 Issues
 Had a common problem with not handing the user a pointer to their own value instead of the one in the cache.
