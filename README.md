@@ -60,7 +60,7 @@ Tests if the cache updates the value of a key i.e. a value is inserted with the 
 GN ```get_nonexistent()```:
 Tests if cache\_get returns NULL when the key searched for is not in the cache.
 
-RES ```resize_()```:
+RES ```resize()```:
 Tests if the cache can resize without failure.
 
 VTB ```val_too_big()```:
